@@ -23,7 +23,7 @@ files <- list.files(path = "D:/Dropbox/OPTED datasets", recursive = T, full.name
   filter(str_detect(file, ("\\.(RDS|rds)"))) %>% 
   mutate(type = str_extract(file, "_[a-zA-Z]*?_") %>% 
            str_remove_all("_") %>% tolower(),
-           country = str_extract(file, "OPTED datasets/[A-Za-z ]*?/") %>% 
+         country = str_extract(file, "OPTED datasets/[A-Za-z ]*?/") %>% 
            str_remove_all("OPTED datasets/") %>% str_remove_all("/"))
 
 # Full parliament names
@@ -60,12 +60,12 @@ speeches_files <- files %>%  filter(type == "speeches")
 
 speeches <- data.frame()
 for (i in 1:nrow(speeches_files)) {
-
+  
   print(speeches_files$file[i])
-
+  
   # Load data
   df <- read_rds(speeches_files$file[i])
-
+  
   # Make missing metadata explicit
   if(!"party" %in% colnames(df)) {
     df$party <- NA
@@ -76,7 +76,7 @@ for (i in 1:nrow(speeches_files)) {
   if(!"speech_ID" %in% colnames(df)) {
     df$speech_ID <- 1:nrow(df) # running number, assuming data is order chronologically
   }
-
+  
   # Harmonize the data
   df <- df %>%
     select(speech_ID, date, text, speaker, party, agenda, speech_procedure_ID) %>%
@@ -85,7 +85,7 @@ for (i in 1:nrow(speeches_files)) {
     mutate(speaker_party = paste0(speaker, " (", party,")")) %>%
     mutate(index = speeches_files$index[i]) %>%
     mutate(parliament = speeches_files$parliament[i])
-
+  
   # Append to target
   speeches <- rbind(speeches, df)
 }
@@ -114,14 +114,18 @@ for (i in 1:nrow(speeches_files)) {
 for (i in 1:nrow(speeches_files)) {
   print(i)
   create_index(speeches_files$index[i], description = paste0("OPTED-WP5: Parliamentary speeches | ", speeches_files$parliament[i]))
+  set_fields(index = speeches_files$index[i],
+             list(speaker = "keyword",
+                  party = "keyword",
+                  speaker_party = "keyword")) # required for query_aggregate, must be set before upload!
 }
 
 list_indexes()
 
 
-# Upload
+# Upload ####
 start_speeches <- Sys.time()
-for (i in 1:nrow(speeches_files)) {
+for (i in 8:nrow(speeches_files)) {
   print(paste0(i, ": ", speeches_files$index[i]))
   upload_documents(speeches_files$index[i], speeches %>% filter(index == speeches_files$index[i]))
 }
@@ -131,162 +135,162 @@ end_speeches - start_speeches # 2.13 hours
 gc()
 
 
+# Speeches hungary [i = 7] and denmark [i = 4] incomplete or missing - upload aborted after some with HTTP 500
 
 
-# Laws ####
-
-laws_files <- files %>%  filter(type == "laws")
-
-# Assemble laws data
-
-laws <- data.frame()
-for (i in 1:nrow(laws_files)) {
-  
-  print(laws_files$file[i])
-  
-  # Load data
-  df <- read_rds(laws_files$file[i]) 
-  
-  # Make missing metadata explicit
-  if(!"adoption_date" %in% colnames(df)) {
-    df$adoption_date <- NA
-  }
-  if(!"law_ID" %in% colnames(df)) {
-    df$law_ID <- NA
-  }
-  if(!"speech_procedure_ID" %in% colnames(df)) {
-    df$speech_procedure_ID <- NA
-  }
-  
-  # Harmonize the data
-  df <- df %>% 
-    select(law_ID, adoption_date, law_text, speech_procedure_ID) %>% 
-    rename(date = adoption_date,
-           text = law_text) %>% 
-    mutate(date = as.Date(date)) %>% 
-    mutate(title = paste0(as.character(date), " - ", law_ID, "; ", speech_procedure_ID)) %>% 
-    mutate(index = laws_files$index[i]) %>% 
-    mutate(parliament = laws_files$parliament[i])
-  
-  # Append to target
-  laws <- rbind(laws, df)
-}
-
-rm(df)
-gc()
-
-summary(laws)
-
-# Some fields are required on AMCAT servers
-laws <- laws %>% 
-  filter(!is.na(date)) %>% 
-  filter(!is.na(title)) %>%
-  filter(!is.na(text))
-
-
-# Create speech indices on AMCAT server
-# Note login above
-
+# # Laws ####
+# 
+# laws_files <- files %>%  filter(type == "laws")
+# 
+# # Assemble laws data
+# 
+# laws <- data.frame()
 # for (i in 1:nrow(laws_files)) {
-#   delete_index(laws_files$index[i]) # Clean up beforehand ...
+#   
+#   print(laws_files$file[i])
+#   
+#   # Load data
+#   df <- read_rds(laws_files$file[i]) 
+#   
+#   # Make missing metadata explicit
+#   if(!"adoption_date" %in% colnames(df)) {
+#     df$adoption_date <- NA
+#   }
+#   if(!"law_ID" %in% colnames(df)) {
+#     df$law_ID <- NA
+#   }
+#   if(!"speech_procedure_ID" %in% colnames(df)) {
+#     df$speech_procedure_ID <- NA
+#   }
+#   
+#   # Harmonize the data
+#   df <- df %>% 
+#     select(law_ID, adoption_date, law_text, speech_procedure_ID) %>% 
+#     rename(date = adoption_date,
+#            text = law_text) %>% 
+#     mutate(date = as.Date(date)) %>% 
+#     mutate(title = paste0(as.character(date), " - ", law_ID, "; ", speech_procedure_ID)) %>% 
+#     mutate(index = laws_files$index[i]) %>% 
+#     mutate(parliament = laws_files$parliament[i])
+#   
+#   # Append to target
+#   laws <- rbind(laws, df)
 # }
-
-for (i in 1:nrow(laws_files)) {
-  print(i)
-  create_index(laws_files$index[i], description = paste0("OPTED-WP5: Parliamentary laws | ", laws_files$parliament[i]))
-}
-
-list_indexes()
-
-
-# Upload
-start_laws <- Sys.time()
-for (i in 1:nrow(laws_files)) {
-  print(paste0(i, ": ", laws_files$index[i]))
-  upload_documents(laws_files$index[i], laws %>% filter(index == laws_files$index[i]))
-}
-end_laws <- Sys.time()
-end_laws - start_laws # 4 mins
-
-
-
-
-# Bills ####
-
-bills_files <- files %>%  filter(type == "bills") %>% 
-  filter(!(country %in% c("Germany", "Austria"))) # Date issues in these for now
-
-# Assemble bills data
-
-bills <- data.frame()
-for (i in 1:nrow(bills_files)) {
-  
-  print(bills_files$file[i])
-  
-  # Load data
-  df <- read_rds(bills_files$file[i]) 
-  
-  # Make missing metadata explicit
-  if(!"initiation_date" %in% colnames(df)) {
-    df$initiation_date <- NA
-  }
-  if(!"bill_ID" %in% colnames(df)) {
-    df$bill_ID <- NA
-  }
-  if(!"speech_procedure_ID" %in% colnames(df)) {
-    df$speech_procedure_ID <- NA
-  }
-  
-  # Harmonize the data
-  df <- df %>% 
-    select(bill_ID, initiation_date, bill_text, speech_procedure_ID) %>% 
-    rename(date = initiation_date,
-           text = bill_text) %>% 
-    mutate(date = as.Date(date)) %>% # Brakes for Dates in German
-    mutate(title = paste0(as.character(date), " - ", bill_ID, "; ", speech_procedure_ID)) %>% 
-    mutate(index = bills_files$index[i]) %>% 
-    mutate(parliament = bills_files$parliament[i])
-  
-  # Append to target
-  bills <- rbind(bills, df)
-}
-
-rm(df)
-gc()
-
-summary(bills)
-
-
-# Some fields are required on AMCAT servers (I'm killing full countries here - raw data errors!)
-bills <- bills %>% 
-  filter(!is.na(date)) %>% 
-  filter(!is.na(title)) %>%
-  filter(!is.na(text))
-
-# Create speech indices on AMCAT server
-# Note login above
-
+# 
+# rm(df)
+# gc()
+# 
+# summary(laws)
+# 
+# # Some fields are required on AMCAT servers
+# laws <- laws %>% 
+#   filter(!is.na(date)) %>% 
+#   filter(!is.na(title)) %>%
+#   filter(!is.na(text))
+# 
+# 
+# # Create speech indices on AMCAT server
+# # Note login above
+# 
+# # for (i in 1:nrow(laws_files)) {
+# #   delete_index(laws_files$index[i]) # Clean up beforehand ...
+# # }
+# 
+# for (i in 1:nrow(laws_files)) {
+#   print(i)
+#   create_index(laws_files$index[i], description = paste0("OPTED-WP5: Parliamentary laws | ", laws_files$parliament[i]))
+# }
+# 
+# list_indexes()
+# 
+# 
+# # Upload
+# start_laws <- Sys.time()
+# for (i in 1:nrow(laws_files)) {
+#   print(paste0(i, ": ", laws_files$index[i]))
+#   upload_documents(laws_files$index[i], laws %>% filter(index == laws_files$index[i]))
+# }
+# end_laws <- Sys.time()
+# end_laws - start_laws # 4 mins
+# 
+# 
+# 
+# 
+# # Bills ####
+# 
+# bills_files <- files %>%  filter(type == "bills") %>% 
+#   filter(!(country %in% c("Germany", "Austria"))) # Date issues in these for now
+# 
+# # Assemble bills data
+# 
+# bills <- data.frame()
 # for (i in 1:nrow(bills_files)) {
-#   delete_index(bills_files$index[i]) # Clean up beforehand ...
+#   
+#   print(bills_files$file[i])
+#   
+#   # Load data
+#   df <- read_rds(bills_files$file[i]) 
+#   
+#   # Make missing metadata explicit
+#   if(!"initiation_date" %in% colnames(df)) {
+#     df$initiation_date <- NA
+#   }
+#   if(!"bill_ID" %in% colnames(df)) {
+#     df$bill_ID <- NA
+#   }
+#   if(!"speech_procedure_ID" %in% colnames(df)) {
+#     df$speech_procedure_ID <- NA
+#   }
+#   
+#   # Harmonize the data
+#   df <- df %>% 
+#     select(bill_ID, initiation_date, bill_text, speech_procedure_ID) %>% 
+#     rename(date = initiation_date,
+#            text = bill_text) %>% 
+#     mutate(date = as.Date(date)) %>% # Brakes for Dates in German
+#     mutate(title = paste0(as.character(date), " - ", bill_ID, "; ", speech_procedure_ID)) %>% 
+#     mutate(index = bills_files$index[i]) %>% 
+#     mutate(parliament = bills_files$parliament[i])
+#   
+#   # Append to target
+#   bills <- rbind(bills, df)
 # }
-
-
-for (i in 1:nrow(bills_files)) {
-  print(i)
-  create_index(bills_files$index[i], description = paste0("OPTED-WP5: Parliamentary bills | ", bills_files$parliament[i]))
-}
-
-list_indexes()
-
-
-# Upload
-start_bills <- Sys.time()
-for (i in 1:nrow(bills_files)) {
-  print(paste0(i, ": ", bills_files$index[i]))
-  upload_documents(bills_files$index[i], bills %>% filter(index == bills_files$index[i]))
-}
-end_bills <- Sys.time()
-end_bills - start_bills # 
-
-
-
+# 
+# rm(df)
+# gc()
+# 
+# summary(bills)
+# 
+# 
+# # Some fields are required on AMCAT servers (I'm killing full countries here - raw data errors!)
+# bills <- bills %>% 
+#   filter(!is.na(date)) %>% 
+#   filter(!is.na(title)) %>%
+#   filter(!is.na(text))
+# 
+# # Create speech indices on AMCAT server
+# # Note login above
+# 
+# # for (i in 1:nrow(bills_files)) {
+# #   delete_index(bills_files$index[i]) # Clean up beforehand ...
+# # }
+# 
+# 
+# for (i in 1:nrow(bills_files)) {
+#   print(i)
+#   create_index(bills_files$index[i], description = paste0("OPTED-WP5: Parliamentary bills | ", bills_files$parliament[i]))
+# }
+# 
+# list_indexes()
+# 
+# 
+# # Upload
+# start_bills <- Sys.time()
+# for (i in 1:nrow(bills_files)) {
+#   print(paste0(i, ": ", bills_files$index[i]))
+#   upload_documents(bills_files$index[i], bills %>% filter(index == bills_files$index[i]))
+# }
+# end_bills <- Sys.time()
+# end_bills - start_bills # 
+# 
+# 

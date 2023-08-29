@@ -1,7 +1,7 @@
 ##################################################################
 # Project:  OPTED WP5 Apps based on AMCAT server
 # Task:     Establish app to query content of speeches
-# Author:   @ChRauh / 23.08.2023
+# Author:   @ChRauh / 29.08.2023
 #################################################################
 
 
@@ -23,7 +23,8 @@ library(gmodels)
 
 # Establish connection to database (AMCAT server)
 library(amcat4r)
-host <- "https://parliaments.opted.eu/api/"
+# host <- "https://parliaments.opted.eu/api/" # Vienna Server
+host <- "https://opted.amcat.nl/amcat" # AMS server
 amcat_login(host) # MUST BE DONE ON THE SHINY SERVER AND ENCRYPTED THERE!
 
 
@@ -48,9 +49,11 @@ ui <- fluidPage(
                                          choices = list("AT: Nationalrat" = "speeches_austria",
                                                         "CZ: Poslanecká snemovna" = "speeches_cz",
                                                         "DE: Bundestag" = "speeches_germany", 
+                                                        "DK: Folketing" = "speeches_denmark",
                                                         "ES: Congreso de los Diputados" = "speeches_spain", 
                                                         "EU: European Parliament" = "speeches_ep",
-                                                        "HR: Hrvatski sabor" = "speeches_croatia"), 
+                                                        "HR: Hrvatski sabor" = "speeches_croatia",
+                                                        "HU: Országgyűlés" = "speeches_hungary"), 
                                          selected = 3),
                              helpText("Choose one of the parliamentary chambers featured in ParlLawSpeech."),
                              
@@ -66,15 +69,14 @@ ui <- fluidPage(
                              h4("Words in Parliament"),
                             p(HTML("<i style = \"color: #0063a6\">Quickly analyze how
                                specific words have featured in political debates of different national parliaments in Europe.</i>")),
-                             p(HTML("<br>")),
-                             p(HTML("Once you have chosen the parliament and words of interest to you on the right-hand side,
-                               we visualize their prominence in all plenary speeches over <i>time</i>, across <i>different parties</i>, and across <i>individual speakers</i>.")),
-                             p("The menu on top of this page leads you to these results. All graphics can be customized and saved by hoovering over them. 
-                               You may also download the underlying data."),
-                             p(HTML("Before <i>using this material in your work</i>, please consult the 'About' page above.")),
-                             p(HTML("This proto-type application has been developed in <a href=\"https://opted.eu/designing-an-infrastructure/wp5-parliamentary-government-and-legal-texts\" target=\"_blank\">Work Package 5</a> 
-                                    of the <a href=\"https://opted.eu\" target=\"_blank\">OPTED initiative</a>. 
-                                    This project has received funding from the European Union’s Horizon 2020 research & innovation programme under <a href=\"https://cordis.europa.eu/project/id/951832\" target=\"_blank\">grant agreement No 951832</a>.<br>")),
+                             p(HTML(" ")),
+                             p(HTML("You chose the parliament and words of interest to you on the right-hand side. We then aggregate and visualize their prominence in all parliamentary speeches over <i>time</i>, across <i>different parties</i>, and across <i>individual speakers</i>.")),
+                             p("The menu on top of this page leads you to the results. All graphics can be customized and saved by hoovering over them. 
+                               You may also download the aggregated data."),
+                            p(HTML("<br>")),
+                             p(HTML("This prototype application has been developed in <a href=\"https://opted.eu/designing-an-infrastructure/wp5-parliamentary-government-and-legal-texts\" target=\"_blank\">Work Package 5</a> 
+                                    of the <a href=\"https://opted.eu\" target=\"_blank\">OPTED initiative</a>, a project that received funding from the European Union’s Horizon 2020 research & innovation programme (<a href=\"https://cordis.europa.eu/project/id/951832\" target=\"_blank\">grant agreement No 951832</a>).<br>")),
+                             p(HTML("The <i>text data</i> behind this application draw from the development version of the encompassing <a href=\"https://chrauh.github.io/ParlLawSpeechTutorials\" target=\"_blank\">ParlLawSpeech</a> collection.<br>Before <i>using any of the material presented here in your own work</i>, please consult the 'about' page above.")),
                              p(HTML("<br>")),
                              
                              h4("Your current selection"),
@@ -88,7 +90,7 @@ ui <- fluidPage(
              sidebarLayout(position = "left",
                            sidebarPanel(width = 3, # Out of 12
                                         helpText("This plot illustrates the prominence of your words of interest in the chosen parliament over time."),
-                                        helpText("It shows the <i>monthly share of speeches that match your query<i>."),
+                                        helpText(HTML("It shows the <i>monthly share of speeches that match your query</i>.")),
                                         helpText("Hoover over the plot to show and hide time series, to adapt the scales, or to save the result."),
                                         helpText("You can also download the monthly time series, but note the usage and citation requirements on the 'about' page."),
                                         downloadButton("downloadTime", "Download time series")),
@@ -120,14 +122,20 @@ ui <- fluidPage(
     tabPanel("About", 
              h3("Background"),
              a(img(src='OPTED_logo_transparent.png', style = "float:right; width: 150px; size: contain;", alt = "OPTED initiative"), href="https://opted.eu"),
-             p(HTML("<p>This proto-type application has been developed in the context of the <a href=\"https://opted.eu\" target=\"_blank\">OPTED initiative</a>, aiming to facilitate access to systematic information from political texts.<p>
-                           It has been developed in <a href=\"https://opted.eu/designing-an-infrastructure/wp5-parliamentary-government-and-legal-texts\" target=\"_blank\">Work Package 5</a>, which focusses on parliamentary, government and legal texts.<br>Johannes Gruber (<a href=\"https://opted.eu/team/wp7-pre-processing-storage-and-data-sharing/\" target=\"_blank\">WP7</a>) and Paul Baluff (<a href=\"https://opted.eu/team/wp3-journalistic-mass-mediated-political-texts/\" target=\"_blank\">WP3</a>) have provided valuable input regarding integration of this app with the AMCAT server backend.<p>
+             p(HTML("<p>This prototype application has been developed in the context of the <a href=\"https://opted.eu\" target=\"_blank\">OPTED initiative</a>, which aims to facilitate the collection of and access to large-scale collections of political texts and the systematic information hidden therein.<p>
+                           The application has been developed by <a href=\"https://opted.eu/designing-an-infrastructure/wp5-parliamentary-government-and-legal-texts\" target=\"_blank\">Work Package 5</a> (see the full list of partners below), which focusses on parliamentary, government and legal texts.<br>
+                           Johannes Gruber (<a href=\"https://opted.eu/team/wp7-pre-processing-storage-and-data-sharing/\" target=\"_blank\">WP7</a>) and Paul Baluff (<a href=\"https://opted.eu/team/wp3-journalistic-mass-mediated-political-texts/\" target=\"_blank\">WP3</a>) have provided valuable input regarding integration of this app with the <a href = \"https://amcat.nl/book/01._why-amcat\" target=\"_blank\">AMCAT server backend</a>.<p>
                            The project has received funding from the European Union’s Horizon 2020 research & innovation programme under <a href=\"https://cordis.europa.eu/project/id/951832\" target=\"_blank\">grant agreement No 951832</a>.<p>
-                           For feedback and questions on this particular application, please contact to <a href=\"http://christian-rauh.eu\" target=\"_blank\">Christian Rauh</a>. <br> ")),
-             p(HTML("<br>")),
+                           Please contact <a href=\"http://christian-rauh.eu\" target=\"_blank\">Christian Rauh</a> for feedback or questions on this particular application. <br> ")),
+             p(HTML(" ")),
              h3("How to cite"),
-             p(HTML("When using any of the material generated here in your own work, please refer to this application and cite the underlying data sources.<br>
-                           At the moment, the parliamentary text data offered here drawn on a pre-publication version of the <i><a href=\"http://htmlpreview.github.io/?https://github.com/ChRauh/ChRauh.github.io/blob/main/ParlLawSpeechTutorials.html\" target=\"_blank\">ParlLawSpeech</a></i> data collection.")),
+             p(HTML("When <i>using any of the material generated here in your own work</i>, please refer to this application and cite the underlying data sources.<br>
+                           The parliamentary text data offered here draw on a pre-publication version of the <i><a href=\"http://htmlpreview.github.io/?https://github.com/ChRauh/ChRauh.github.io/blob/main/ParlLawSpeechTutorials.html\" target=\"_blank\">ParlLawSpeech</a></i> data collection.<br>
+                    For now please use the citation below but check back for updates. Thank you!")),
+             # code("Rauh, Christian, Péter Gelányi, Lukas Hetzer, Sven-Oliver Proksch, Jan Schwalbach, and Miklós Sebők (2023) \'ParlLawSpeech - Public Access Website\', OPTED Deliverable D5.6"), 
+             p(HTML("Rauh, Christian; Péter Gelányi; Lukas Hetzer; Sven-Oliver Proksch; Jan Schwalbach; and Miklós Sebők (2023) \'ParlLawSpeech - Public Access Website\', OPTED Deliverable D5.6"), style="text-align:left;color:#0063a6"),
+             # div(style = "border-style: solid; border-color: #0063a6;",
+             #      p(HTML("Rauh, Christian; Péter Gelányi; Lukas Hetzer; Sven-Oliver Proksch; Jan Schwalbach; and Miklós Sebők (2023) \'ParlLawSpeech - Public Access Website\', OPTED Deliverable D5.6"), style="text-align:center")),
              p(HTML("<br>")),
              
              h3("Project partners"),
@@ -140,7 +148,7 @@ ui <- fluidPage(
                                 tags$td(HTML("<br>")),
                                 tags$td(HTML("<br>"))),
                         tags$tr(tags$td("Christian Rauh"),
-                                tags$td(HTML("Miklós Sebők<br>Anna Székely<br>Péter Visnovitz")),
+                                tags$td(HTML("Miklós Sebők<br>Anna Székely<br>Péter Visnovitz<br>Péter Gelányi")),
                                 tags$td(HTML("Sven-Oliver Proksch<br>Jan Schwalbach<br>Lukas Hetzer<br>Alexander Dalheimer"))))
              # p(a(img(src='WZB_Komb_portrait_Web_engl.png', style = "float:left; height: 100px; size: contain;", alt = "OPTED initiative"), href="https://opted.eu"),
              #   a(img(src='pti_logo.png', style = "float:center; height: 100px; size: contain;", alt = "OPTED initiative"), href="https://opted.eu"),
@@ -158,10 +166,10 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   # Database overview 
-  # For plotting summaries and correct dat labelling
-  parl.select <- data.frame(parliament = c("speeches_austria", "speeches_cz", "speeches_germany", "speeches_spain", "speeches_ep", "speeches_croatia"), # Equals the index name in AMCAT database
-                            parl.name = c("Nationalrat (Austria)", "Poslanecká snemovna (Czech Republic)", "Bundestag (Germany)", "Congreso de los Diputados (Spain)", "European Parliament (EU)", "Hrvatski sabor (Croatia)"),
-                            nspeeches = c(205110, 391306, 188230, 268329, 300168, 405273)) 
+  # For plotting summaries and correct data labeling
+  parl.select <- data.frame(parliament = c("speeches_austria", "speeches_cz", "speeches_germany", "speeches_spain", "speeches_ep", "speeches_croatia", "speeches_denmark", "speeches_hungary"), # Equals the index name in AMCAT database
+                            parl.name = c("Nationalrat (Austria)", "Poslanecká snemovna (Czech Republic)", "Bundestag (Germany)", "Congreso de los Diputados (Spain)", "European Parliament (EU)", "Hrvatski sabor (Croatia)", "Folketing (Denmark)", "Országgyűlés (Hungary)"),
+                            nspeeches = c(205110, 391306, 188230, 268329, 300168, 405260, 715928, 487877)) 
   
   # Load normalisation data
   monthly.speeches <- read_rds("./Data/monthly.speeches.rds")
@@ -176,7 +184,7 @@ server <- function(input, output) {
 
   # Update user query upon submit button
   user.words <- eventReactive(input$submit, {
-    input$words
+    paste0("text:(", input$words, ")")
 
   })
   
@@ -331,7 +339,7 @@ server <- function(input, output) {
       scale_x_continuous(labels = scales::percent)+
       labs(title = "Keywords by party of speaker",
            subtitle = paste("Parliament: ", user.parliament(), ". Keywords: ", user.words(), sep = ""),
-           x = "Share of partisan parliamentary speechesthat match the query\n(vertical line indicates average across parties)",
+           x = "Share of partisan parliamentary speeches that match the query\n(vertical line indicates average across parties)",
            y = "")+
       theme_bw()+
       theme(legend.position = "none",
@@ -360,6 +368,7 @@ server <- function(input, output) {
   
   
   # Speaker data 
+  # TODO: Tune this to speaker_party (including normalisation) 
   speaker.data <- reactive({
     
     if(input$submit == 0) {return(NULL)}
@@ -446,6 +455,7 @@ server <- function(input, output) {
     
     summary <- paste0("Parliament:\t\t\t\t", parl.select$parl.name[parl.select$parliament == user.parliament()], "\n",
                       "Query:\t\t\t\t\t", user.words(), "\n",
+                      "Server:\t\t\t\t\t", host, "\n",
                       "Database:\t\t\t\t", user.parliament(), "\n",
                       "Total number of speeches analysed:\t", parl.select$nspeeches[parl.select$parliament == user.parliament()], "\n")
     

@@ -14,12 +14,13 @@ library(tidyverse)
 library(amcat4r)
 
 # Connect to database
-host <- "https://parliaments.opted.eu/api/"
+# host <- "https://parliaments.opted.eu/api/" # Vienna server
+host <- "https://opted.amcat.nl/amcat" # AMS server - [registered e-mail, stored locally]
 amcat_login(host) 
 
 
-# All indices on server ###
-indices <- list_indexes()
+# All speeches indices on server ###
+indices <- list_indexes() %>%  filter(str_detect(name, fixed("speeches")))
 
 
 # For the app it is decisive that each of those comes with an identical set of fields (columns)
@@ -94,6 +95,8 @@ ndocs.monthly <- docs %>%
 # For correct plots, generate complete series here
 complete.months <- data.frame(NULL)
 for(i in 1:nrow(indices)) {
+  print(i)
+  print(indices$name[i])
   
   minmonth <- paste0(min(ndocs.monthly$month[ndocs.monthly$index ==  indices$name[i]]), "-01") # First day of first month with observations
   maxmonth <- paste0(max(ndocs.monthly$month[ndocs.monthly$index ==  indices$name[i]]), "-01") # First day of last month with observations
