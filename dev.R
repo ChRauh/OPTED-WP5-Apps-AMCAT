@@ -150,6 +150,9 @@ write_rds(party.speeches, "./PLS-words-AMCAT/Data/party.speeches.rds")
 # TO DOs
 # breaks when keywords are non-existent - check "arbeitslos" in spain
 # Reverse party match - parties currently get dropped when there are no query hits
+# Reduce query top text field
+# How to handle technical characters in R /"
+# Get ParlLawSpeech Frontpage
 
 
 # Check whther we can quickly query hits
