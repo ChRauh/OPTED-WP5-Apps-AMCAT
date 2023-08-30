@@ -1,7 +1,7 @@
 ############################################################
 # Project:  OPTED WP5
 # Task:     Prepare normalisation data for PLS-Words app
-# Author:   Christian Rauh (29.08.2023)
+# Author:   Christian Rauh (30.08.2023)
 ############################################################
 
 # The issue
@@ -19,8 +19,8 @@ library(tidyverse)
 # Prepare PLS data ####
 
 # Get file lists (local paths HP)
-data.path <- "D:/Dropbox/OPTED datasets" # HP home
-# data.path <- "C:/Users/rauh/Dropbox/OPTED datasets" # WZB
+# data.path <- "D:/Dropbox/OPTED datasets" # HP home
+data.path <- "C:/Users/rauh/Dropbox/OPTED datasets" # WZB
 files <- list.files(path = data.path, recursive = T, full.names = T) %>% 
   as.data.frame() %>% 
   rename(file = 1) %>% 
@@ -175,4 +175,23 @@ party.speeches <- docs %>%
   summarise(party.speeches = n()) %>% 
   ungroup() %>% ungroup()
 write_rds(party.speeches, "./PLS-words-AMCAT/Data/party.speeches.rds") # Export
+
+
+
+
+# Selectize Input for Extractor App ######
+
+# Parties
+ac_parties <- unique(speeches$party)
+write_rds(ac_parties, "./PLS-extract-AMCAT/Data/ac-parties.rds")
+
+# Speakers
+ac_speakers <- unique(speeches$speaker)
+write_rds(ac_speakers, "./PLS-extract-AMCAT/Data/ac-speakers.rds")
+
+# For testing puposes a smaller version
+ac_speakers <- unique(speeches$speaker) %>% sample(size = 100, replace = F)
+write_rds(ac_speakers, "./PLS-extract-AMCAT/Data/ac-speakers_test.rds")
+
+
 

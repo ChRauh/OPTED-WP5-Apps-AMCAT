@@ -42,7 +42,7 @@ speeches$upl <- T
 # Upload each row individually ----
 for (i in 1:nrow(speeches)) {
   tryCatch({
-    print(paste0(i, ": ", round((i/nrow(speeches)))*100, "%"))
+    print(paste0(i, ": ", round((i/nrow(speeches))*100, 2), "%"))
     upload_documents(index = "speeches_denmark", 
                      documents <- speeches[i, ])
   }, 

@@ -1,12 +1,5 @@
-##################################################################
-# Project:  OPTED WP5 Apps based on AMCAT server
-# TasK:     Generate satic background data to be used in the apps
-# Author:   @ChRauh / 23.08.2023
-#################################################################
+# Dev script for preparing/testing elements of the app
 
-# The issues
-# I. Data retrieved from AMCAT datbase needs to be normalized in various ways. Rather than repeating request to the database, store data to be normalized against once
-# II. Time series extracted from AMCAT are incomplete if there are no query hits in a certain month, for example. Full time series needed as basis
 
 
 # Packages
@@ -165,6 +158,67 @@ nrow(query_documents("speeches_germany",
                 per_page = 100,
                 scroll = "5m",
                 max_pages = Inf))
+
+
+
+
+# Query logcigs for extractor
+
+
+parliament <- "speeches_germany"
+query = "text:(migration)"
+
+mindate = "2015-01-01"
+maxdate = "2015-12-31"
+date = paste0("date:[",mindate, " TO ",maxdate,"]")
+
+if(nchar(mindate)>0){query = paste0(query, " ", date)}
+
+
+party = "" 
+speaker = "Angela Merkel"
+
+filter.list <- list(speaker = speaker, party = party)
+
+if(nchar(party)==0){filter.list$party <- NULL}
+
+test <- query_documents(index = parliament,
+                        queries = "date:[* TO *]",
+                        fields = c("date", "speaker", "party", "text", "title", "agenda"), 
+                        # filters = filter.list,
+                        per_page = 1000,
+                        scroll = "5m",
+                        max_pages = Inf)
+
+
+filter.list <- list(speaker = speaker)
+
+
+
+
+keywords = user.words()
+# if(keywords == "text:()"){keywords = NULL} # Ensure that empty queries are treated as such
+
+# Extract dates
+mindate = user.dates()[1] %>% as.character()
+maxdate = user.dates()[2] %>% as.character()
+
+# Adapt empty fields to elastic language
+if(is.na(mindate)){mindate = "*"}
+if(is.na(maxdate)){maxdate = "*"}
+
+# Date search string (elastic language)
+date = paste0("date:[", mindate, " TO ", maxdate,"]")
+
+# Add date to text query if keywords field has content
+# otherwise we search for date range only ("* TO*" if no dates are supplied)
+query <- NULL # Empty, the fall-back
+if(!is.null(keywords) & (is.na(mindate) & is.na(mindate))){query = keywords} # If  there are keywords but not dates, search for keywords only
+if(is.null(keywords) & (!is.na(mindate) | !is.na(mindate))){query = date} # If there are no keywords but at least one date, search for date string
+if(!is.null(keywords) & (!is.na(mindate) | !is.na(mindate))){query = paste0(keywords, " ", date)} # 
+
+
+
 
 
 # # Logic of time series data in PLS-words

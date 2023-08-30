@@ -9,17 +9,9 @@
 # Packages ####
 library(shiny)
 library(tidyverse)
-# library(dplyr)
-# library(magrittr)
-# library(tidyr)
-# library(forcats)
-# library(ggplot2)
-# library(stringr)
-# library(readr)
-
 library(plotly) # 4.10.0
 library(gmodels)
-#library(feather)
+
 
 # Establish connection to database (AMCAT server)
 library(amcat4r)
