@@ -70,7 +70,7 @@ ui <- fluidPage(
                             p(HTML("<i style = \"color: #0063a6\">Quickly analyze how
                                specific words have featured in political debates of different national parliaments in Europe.</i>")),
                              p(HTML(" ")),
-                             p(HTML("You chose the parliament and words of interest to you on the right-hand side. We then aggregate and visualize their prominence in all parliamentary speeches over <i>time</i>, across <i>different parties</i>, and across <i>individual speakers</i>.")),
+                             p(HTML("You choose the parliament and words of interest to you on the right-hand side. We then aggregate and visualize their prominence in all parliamentary speeches over <i>time</i>, across <i>different parties</i>, and across <i>individual speakers</i>.")),
                              p("The menu on top of this page leads you to the results. All graphics can be customized and saved by hoovering over them. 
                                You may also download the aggregated data."),
                             p(HTML("<br>")),
@@ -472,3 +472,11 @@ server <- function(input, output) {
 
 
 shinyApp(ui, server)
+
+
+# TODO Alex:
+# Check integrity watch TI
+# Language note (native)
+# plotly select in bat charts not meningful
+# png download doesn't work on server
+# plotly compare tool doesn't work for bars

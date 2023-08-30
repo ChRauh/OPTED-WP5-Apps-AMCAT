@@ -16,10 +16,8 @@ amcat_login("https://opted.amcat.nl/amcat") # [e-mail address of registered user
 
 # Prepare PLS data ####
 
-# Get file lists 
-# data.path <- "D:/Dropbox/OPTED datasets" # HP home
-data.path <- "C:/Users/rauh/Dropbox/OPTED datasets" # WZB
-files <- list.files(path = data.path, recursive = T, full.names = T) %>% 
+# Get file lists (local paths HP)
+files <- list.files(path = "D:/Dropbox/OPTED datasets", recursive = T, full.names = T) %>% 
   as.data.frame() %>% 
   rename(file = 1) %>% 
   filter(str_detect(file, ("\\.(RDS|rds)"))) %>% 
